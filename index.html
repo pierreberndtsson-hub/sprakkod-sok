@@ -1,1 +1,361 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Språkkod Sök – ISO 639-1</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --card: #1a2332;
+    --accent: #3b82f6;
+    --accent2: #10b981;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    line-height: 1.5;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.3rem; text-align: center; }
+  .subtitle { text-align: center; color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem; }
+  .search-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  input[type="text"] {
+    width: 100%;
+    background: #0f172a;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-size: 1.4rem;
+    color: var(--text);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); letter-spacing: 0; text-transform: none; font-size: 1rem; }
+  .result {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    min-height: 140px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .result.empty { opacity: 0.6; text-align: center; padding-top: 40px; }
+  .code-big {
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 4px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .lang-name { font-size: 1.5rem; font-weight: 600; margin-bottom: 4px; }
+  .lang-native { color: var(--muted); font-size: 1.05rem; margin-bottom: 12px; }
+  .countries { font-size: 0.95rem; color: var(--accent2); }
+  .note { margin-top: 16px; font-size: 0.85rem; color: var(--muted); text-align: center; }
+  .list-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 20px auto;
+    display: block;
+    font-size: 0.95rem;
+  }
+  .list-toggle:hover { background: var(--card); }
+  #full-list { display: none; margin-top: 20px; }
+  #full-list.show { display: block; }
+  .lang-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .lang-item:hover { background: #1e293b; }
+  .lang-code { font-weight: 700; color: var(--accent); min-width: 50px; }
+  .footer { text-align: center; margin-top: 40px; color: var(--muted); font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Språkkod Sök</h1>
+  <p class="subtitle">Skriv två bokstäver → få språket direkt (ISO 639-1)</p>
+
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Skriv t.ex. SV, EN, DE..." maxlength="2" autofocus autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="result empty" id="result">
+    Skriv två bokstäver ovan för att se språket
+  </div>
+
+  <p class="note">Koderna är för <strong>språk</strong>, inte länder. Många språk talas i flera länder.</p>
+
+  <button class="list-toggle" id="toggleList">Visa hela listan</button>
+  <div id="full-list"></div>
+
+  <div class="footer">
+    ISO 639-1 · ~184 officiella tvåbokstavskoder<br>
+    Data baserad på officiell ISO-standard
+  </div>
+</div>
+
+<script>
+const languages = {
+  "aa": { name: "Afar", native: "Afaraf", countries: "Etiopien, Djibouti, Eritrea" },
+  "ab": { name: "Abkhazian", native: "аҕсуа бызшәа", countries: "Abchazien (Georgien)" },
+  "ae": { name: "Avestan", native: "avesta", countries: "Historiskt (Iran)" },
+  "af": { name: "Afrikaans", native: "Afrikaans", countries: "Sydafrika, Namibia" },
+  "ak": { name: "Akan", native: "Akan", countries: "Ghana" },
+  "am": { name: "Amharic", native: "አማርኛ", countries: "Etiopien" },
+  "an": { name: "Aragonese", native: "aragonés", countries: "Spanien" },
+  "ar": { name: "Arabic", native: "العربية", countries: "Många länder i Mellanöstern & Nordafrika" },
+  "as": { name: "Assamese", native: "অসমীয়া", countries: "Indien" },
+  "av": { name: "Avaric", native: "авар мацӀ", countries: "Ryssland (Dagestan)" },
+  "ay": { name: "Aymara", native: "aymar aru", countries: "Bolivia, Peru, Chile" },
+  "az": { name: "Azerbaijani", native: "azərbaycan dili", countries: "Azerbajdzjan" },
+  "ba": { name: "Bashkir", native: "башҡорт теле", countries: "Ryssland" },
+  "be": { name: "Belarusian", native: "беларуская мова", countries: "Belarus" },
+  "bg": { name: "Bulgarian", native: "български език", countries: "Bulgarien" },
+  "bi": { name: "Bislama", native: "Bislama", countries: "Vanuatu" },
+  "bm": { name: "Bambara", native: "bamanankan", countries: "Mali" },
+  "bn": { name: "Bengali", native: "বাংলা", countries: "Bangladesh, Indien" },
+  "bo": { name: "Tibetan", native: "བོད་ཡིག", countries: "Tibet (Kina), Nepal, Indien" },
+  "br": { name: "Breton", native: "brezhoneg", countries: "Frankrike" },
+  "bs": { name: "Bosnian", native: "bosanski jezik", countries: "Bosnien-Hercegovina" },
+  "ca": { name: "Catalan", native: "català", countries: "Spanien (Katalonien), Andorra" },
+  "ce": { name: "Chechen", native: "нохчийн мотт", countries: "Ryssland (Tjetjenien)" },
+  "ch": { name: "Chamorro", native: "Chamoru", countries: "Guam, Nordmarianerna" },
+  "co": { name: "Corsican", native: "corsu", countries: "Frankrike (Korsika)" },
+  "cr": { name: "Cree", native: "ᓀᐦᐃᓕᐍᐏᐣ", countries: "Kanada" },
+  "cs": { name: "Czech", native: "čeština", countries: "Tjeckien" },
+  "cu": { name: "Church Slavonic", native: "словѣньскъ", countries: "Historiskt (ortodox liturgi)" },
+  "cv": { name: "Chuvash", native: "чӑваш чӗлхи", countries: "Ryssland" },
+  "cy": { name: "Welsh", native: "Cymraeg", countries: "Storbritannien (Wales)" },
+  "da": { name: "Danish", native: "dansk", countries: "Danmark, Grönland" },
+  "de": { name: "German", native: "Deutsch", countries: "Tyskland, Österrike, Schweiz" },
+  "dv": { name: "Divehi", native: "ދިވެހި", countries: "Maldiverna" },
+  "dz": { name: "Dzongkha", native: "རྟོང་ཁ", countries: "Bhutan" },
+  "ee": { name: "Ewe", native: "Eʋegbe", countries: "Ghana, Togo" },
+  "el": { name: "Greek", native: "Ελληνικά", countries: "Grekland, Cypern" },
+  "en": { name: "English", native: "English", countries: "USA, Storbritannien, Kanada, Australien m.fl." },
+  "eo": { name: "Esperanto", native: "Esperanto", countries: "Konstruerat språk (internationellt)" },
+  "es": { name: "Spanish", native: "español", countries: "Spanien, Latinamerika, många länder" },
+  "et": { name: "Estonian", native: "eesti", countries: "Estland" },
+  "eu": { name: "Basque", native: "euskara", countries: "Spanien, Frankrike" },
+  "fa": { name: "Persian", native: "فارسی", countries: "Iran, Afghanistan, Tadzjikistan" },
+  "ff": { name: "Fulah", native: "Fulfulde", countries: "Västafrika" },
+  "fi": { name: "Finnish", native: "suomi", countries: "Finland" },
+  "fj": { name: "Fijian", native: "vosa Vakaviti", countries: "Fiji" },
+  "fo": { name: "Faroese", native: "føroyskt", countries: "Färöarna" },
+  "fr": { name: "French", native: "français", countries: "Frankrike, Belgien, Schweiz, Kanada m.fl." },
+  "fy": { name: "Western Frisian", native: "Frysk", countries: "Nederländerna" },
+  "ga": { name: "Irish", native: "Gaeilge", countries: "Irland" },
+  "gd": { name: "Scottish Gaelic", native: "Gàidhlig", countries: "Storbritannien (Skottland)" },
+  "gl": { name: "Galician", native: "galego", countries: "Spanien" },
+  "gn": { name: "Guarani", native: "Avañe'ẽ", countries: "Paraguay, Bolivia" },
+  "gu": { name: "Gujarati", native: "ગુજરાતી", countries: "Indien" },
+  "gv": { name: "Manx", native: "Gaelg", countries: "Isle of Man" },
+  "ha": { name: "Hausa", native: "هَوُسَ", countries: "Nigeria, Niger" },
+  "he": { name: "Hebrew", native: "עברית", countries: "Israel" },
+  "hi": { name: "Hindi", native: "हिन्दी", countries: "Indien" },
+  "ho": { name: "Hiri Motu", native: "Hiri Motu", countries: "Papua Nya Guinea" },
+  "hr": { name: "Croatian", native: "hrvatski", countries: "Kroatien" },
+  "ht": { name: "Haitian Creole", native: "Kreyòl ayisyen", countries: "Haiti" },
+  "hu": { name: "Hungarian", native: "magyar", countries: "Ungern" },
+  "hy": { name: "Armenian", native: "Հայերեն", countries: "Armenien" },
+  "hz": { name: "Herero", native: "Otjiherero", countries: "Namibia, Botswana" },
+  "ia": { name: "Interlingua", native: "Interlingua", countries: "Konstruerat språk" },
+  "id": { name: "Indonesian", native: "Bahasa Indonesia", countries: "Indonesien" },
+  "ie": { name: "Interlingue", native: "Interlingue", countries: "Konstruerat språk" },
+  "ig": { name: "Igbo", native: "Asụsụ Igbo", countries: "Nigeria" },
+  "ii": { name: "Sichuan Yi", native: "ꆈꌠꑙ", countries: "Kina" },
+  "ik": { name: "Inupiaq", native: "Iñupiaq", countries: "USA (Alaska)" },
+  "io": { name: "Ido", native: "Ido", countries: "Konstruerat språk" },
+  "is": { name: "Icelandic", native: "íslenska", countries: "Island" },
+  "it": { name: "Italian", native: "italiano", countries: "Italien, Schweiz" },
+  "iu": { name: "Inuktitut", native: "ᐃᓄᒃᑎᑐᑦ", countries: "Kanada, Grönland" },
+  "ja": { name: "Japanese", native: "日本語", countries: "Japan" },
+  "jv": { name: "Javanese", native: "basa Jawa", countries: "Indonesien" },
+  "ka": { name: "Georgian", native: "ქართული", countries: "Georgien" },
+  "kg": { name: "Kongo", native: "Kikongo", countries: "Kongo, Angola" },
+  "ki": { name: "Kikuyu", native: "Gĩkũyũ", countries: "Kenya" },
+  "kj": { name: "Kuanyama", native: "Kuanyama", countries: "Namibia, Angola" },
+  "kk": { name: "Kazakh", native: "қазақ тілі", countries: "Kazakstan" },
+  "kl": { name: "Greenlandic", native: "kalaallisut", countries: "Grönland" },
+  "km": { name: "Khmer", native: "ភាសាខ្មែរ", countries: "Kambodja" },
+  "kn": { name: "Kannada", native: "ಕನ್ನಡ", countries: "Indien" },
+  "ko": { name: "Korean", native: "한국어", countries: "Sydkorea, Nordkorea" },
+  "kr": { name: "Kanuri", native: "Kanuri", countries: "Nigeria, Niger" },
+  "ks": { name: "Kashmiri", native: "कॉशुर", countries: "Indien, Pakistan" },
+  "ku": { name: "Kurdish", native: "Kurdî", countries: "Turkiet, Irak, Iran, Syrien" },
+  "kv": { name: "Komi", native: "коми кыв", countries: "Ryssland" },
+  "kw": { name: "Cornish", native: "Kernewek", countries: "Storbritannien (Cornwall)" },
+  "ky": { name: "Kyrgyz", native: "кыргызча", countries: "Kirgizistan" },
+  "la": { name: "Latin", native: "latine", countries: "Historiskt (Vatikanen)" },
+  "lb": { name: "Luxembourgish", native: "Lëtzebuergesch", countries: "Luxemburg" },
+  "lg": { name: "Ganda", native: "Luganda", countries: "Uganda" },
+  "li": { name: "Limburgish", native: "Limburgs", countries: "Nederländerna, Belgien" },
+  "ln": { name: "Lingala", native: "Lingála", countries: "Kongo, DR Kongo" },
+  "lo": { name: "Lao", native: "ພາສາລາວ", countries: "Laos" },
+  "lt": { name: "Lithuanian", native: "lietuvių kalba", countries: "Litauen" },
+  "lu": { name: "Luba-Katanga", native: "Kiluba", countries: "DR Kongo" },
+  "lv": { name: "Latvian", native: "latviešu valoda", countries: "Lettland" },
+  "mg": { name: "Malagasy", native: "fiteny malagasy", countries: "Madagaskar" },
+  "mh": { name: "Marshallese", native: "Kajin M̧ajeļ", countries: "Marshallöarna" },
+  "mi": { name: "Maori", native: "te reo Māori", countries: "Nya Zeeland" },
+  "mk": { name: "Macedonian", native: "македонски јазик", countries: "Nordmakedonien" },
+  "ml": { name: "Malayalam", native: "മലയാളം", countries: "Indien" },
+  "mn": { name: "Mongolian", native: "монгол", countries: "Mongoliet" },
+  "mr": { name: "Marathi", native: "मराठी", countries: "Indien" },
+  "ms": { name: "Malay", native: "bahasa Melayu", countries: "Malaysia, Indonesien, Brunei" },
+  "mt": { name: "Maltese", native: "Malti", countries: "Malta" },
+  "my": { name: "Burmese", native: "ဗမာစာ", countries: "Myanmar" },
+  "na": { name: "Nauru", native: "Ekakairũ Naoero", countries: "Nauru" },
+  "nb": { name: "Norwegian Bokmål", native: "norsk bokmål", countries: "Norge" },
+  "nd": { name: "North Ndebele", native: "isiNdebele", countries: "Zimbabwe" },
+  "ne": { name: "Nepali", native: "नेपाली", countries: "Nepal" },
+  "ng": { name: "Ndonga", native: "Owambo", countries: "Namibia" },
+  "nl": { name: "Dutch", native: "Nederlands", countries: "Nederländerna, Belgien, Surinam" },
+  "nn": { name: "Norwegian Nynorsk", native: "norsk nynorsk", countries: "Norge" },
+  "no": { name: "Norwegian", native: "norsk", countries: "Norge" },
+  "nr": { name: "South Ndebele", native: "isiNdebele", countries: "Sydafrika" },
+  "nv": { name: "Navajo", native: "Diné bizaad", countries: "USA" },
+  "ny": { name: "Chichewa", native: "chiCheṅa", countries: "Malawi, Zambia" },
+  "oc": { name: "Occitan", native: "occitan", countries: "Frankrike, Spanien, Italien" },
+  "oj": { name: "Ojibwa", native: "ᐊᓂᔑᓈᐯᒥᒨᓄ", countries: "Kanada, USA" },
+  "om": { name: "Oromo", native: "Afaan Oromoo", countries: "Etiopien, Kenya" },
+  "or": { name: "Oriya", native: "ଓଡ଼ିଆ", countries: "Indien" },
+  "os": { name: "Ossetian", native: "ирон æвзаг", countries: "Ryssland, Georgien" },
+  "pa": { name: "Punjabi", native: "ਪੰਜਾਬੀ", countries: "Indien, Pakistan" },
+  "pi": { name: "Pali", native: "पािि", countries: "Historiskt (buddhistiska texter)" },
+  "pl": { name: "Polish", native: "polski", countries: "Polen" },
+  "ps": { name: "Pashto", native: "پښتو", countries: "Afghanistan, Pakistan" },
+  "pt": { name: "Portuguese", native: "português", countries: "Portugal, Brasil, Angola m.fl." },
+  "qu": { name: "Quechua", native: "Runa Simi", countries: "Peru, Bolivia, Ecuador" },
+  "rm": { name: "Romansh", native: "rumantsch", countries: "Schweiz" },
+  "rn": { name: "Rundi", native: "Ikirundi", countries: "Burundi" },
+  "ro": { name: "Romanian", native: "română", countries: "Rumänien, Moldavien" },
+  "ru": { name: "Russian", native: "русский", countries: "Ryssland, många länder i före detta Sovjetunionen" },
+  "rw": { name: "Kinyarwanda", native: "Ikinyarwanda", countries: "Rwanda" },
+  "sa": { name: "Sanskrit", native: "संस्कृतम्", countries: "Indien (historiskt/liturgiskt)" },
+  "sc": { name: "Sardinian", native: "sardu", countries: "Italien" },
+  "sd": { name: "Sindhi", native: "सिन्धी", countries: "Pakistan, Indien" },
+  "se": { name: "Northern Sami", native: "davvisámegiella", countries: "Norge, Sverige, Finland" },
+  "sg": { name: "Sango", native: "yângâ tî sängö", countries: "Centralafrikanska republiken" },
+  "si": { name: "Sinhala", native: "සිංහල", countries: "Sri Lanka" },
+  "sk": { name: "Slovak", native: "slovenčina", countries: "Slovakien" },
+  "sl": { name: "Slovenian", native: "slovenščina", countries: "Slovenien" },
+  "sm": { name: "Samoan", native: "gagana fa'a Samoa", countries: "Samoa" },
+  "sn": { name: "Shona", native: "chiShona", countries: "Zimbabwe" },
+  "so": { name: "Somali", native: "Soomaaliga", countries: "Somalia, Etiopien, Kenya" },
+  "sq": { name: "Albanian", native: "Shqip", countries: "Albanien, Kosovo" },
+  "sr": { name: "Serbian", native: "српски језик", countries: "Serbien, Bosnien-Hercegovina" },
+  "ss": { name: "Swati", native: "SiSwati", countries: "Eswatini, Sydafrika" },
+  "st": { name: "Southern Sotho", native: "Sesotho", countries: "Lesotho, Sydafrika" },
+  "su": { name: "Sundanese", native: "Basa Sunda", countries: "Indonesien" },
+  "sv": { name: "Swedish", native: "svenska", countries: "Sverige, Finland" },
+  "sw": { name: "Swahili", native: "Kiswahili", countries: "Kenya, Tanzania, Uganda m.fl." },
+  "ta": { name: "Tamil", native: "தமிழ்", countries: "Indien, Sri Lanka, Singapore" },
+  "te": { name: "Telugu", native: "తెలుగు", countries: "Indien" },
+  "tg": { name: "Tajik", native: "тоҷикӣ", countries: "Tadzjikistan" },
+  "th": { name: "Thai", native: "ไทย", countries: "Thailand" },
+  "ti": { name: "Tigrinya", native: "ትግርኛ", countries: "Eritrea, Etiopien" },
+  "tk": { name: "Turkmen", native: "Türkmen", countries: "Turkmenistan" },
+  "tl": { name: "Tagalog", native: "Wikang Tagalog", countries: "Filippinerna" },
+  "tn": { name: "Tswana", native: "Setswana", countries: "Botswana, Sydafrika" },
+  "to": { name: "Tonga", native: "faka Tonga", countries: "Tonga" },
+  "tr": { name: "Turkish", native: "Türkçe", countries: "Turkiet, Cypern" },
+  "ts": { name: "Tsonga", native: "Xitsonga", countries: "Sydafrika, Moçambique" },
+  "tt": { name: "Tatar", native: "татар теле", countries: "Ryssland" },
+  "tw": { name: "Twi", native: "Twi", countries: "Ghana" },
+  "ty": { name: "Tahitian", native: "Reo Tahiti", countries: "Franska Polynesien" },
+  "ug": { name: "Uyghur", native: "ئۇيغۇرچە", countries: "Kina (Xinjiang)" },
+  "uk": { name: "Ukrainian", native: "українська", countries: "Ukraina" },
+  "ur": { name: "Urdu", native: "اردو", countries: "Pakistan, Indien" },
+  "uz": { name: "Uzbek", native: "oʽzbek", countries: "Uzbekistan" },
+  "ve": { name: "Venda", native: "Tshivenḓa", countries: "Sydafrika" },
+  "vi": { name: "Vietnamese", native: "Tiếng Việt", countries: "Vietnam" },
+  "vo": { name: "Volapük", native: "Volapük", countries: "Konstruerat språk" },
+  "wa": { name: "Walloon", native: "walon", countries: "Belgien" },
+  "wo": { name: "Wolof", native: "Wollof", countries: "Senegal, Gambia" },
+  "xh": { name: "Xhosa", native: "isiXhosa", countries: "Sydafrika" },
+  "yi": { name: "Yiddish", native: "ייִדיש", countries: "Israel, USA m.fl." },
+  "yo": { name: "Yoruba", native: "Yorùbá", countries: "Nigeria, Benin" },
+  "za": { name: "Zhuang", native: "Saɯ cueŋƅ", countries: "Kina" },
+  "zh": { name: "Chinese", native: "中文", countries: "Kina, Taiwan, Singapore m.fl." },
+  "zu": { name: "Zulu", native: "isiZulu", countries: "Sydafrika" }
+};
+
+const searchInput = document.getElementById("search");
+const resultDiv = document.getElementById("result");
+const fullList = document.getElementById("full-list");
+const toggleBtn = document.getElementById("toggleList");
+
+function updateResult() {
+  const code = searchInput.value.trim().toLowerCase();
+  if (code.length !== 2) {
+    resultDiv.className = "result empty";
+    resultDiv.innerHTML = "Skriv två bokstäver ovan för att se språket";
+    return;
+  }
+  const lang = languages[code];
+  if (lang) {
+    resultDiv.className = "result";
+    resultDiv.innerHTML = `
+      <div class="code-big">${code.toUpperCase()}</div>
+      <div class="lang-name">${lang.name}</div>
+      <div class="lang-native">${lang.native || ""}</div>
+      <div class="countries">Vanliga länder/områden: ${lang.countries || "—"}</div>
+    `;
+  } else {
+    resultDiv.className = "result";
+    resultDiv.innerHTML = `
+      <div class="code-big">${code.toUpperCase()}</div>
+      <div class="lang-name">Ingen träff</div>
+      <div class="lang-native">Koden finns inte i ISO 639-1</div>
+    `;
+  }
+}
+
+searchInput.addEventListener("input", updateResult);
+
+// Build full list
+const codes = Object.keys(languages).sort();
+fullList.innerHTML = codes.map(code => {
+  const l = languages[code];
+  return `<div class="lang-item"><span class="lang-code">${code.toUpperCase()}</span><span>${l.name}</span></div>`;
+}).join("");
+
+toggleBtn.addEventListener("click", () => {
+  fullList.classList.toggle("show");
+  toggleBtn.textContent = fullList.classList.contains("show") ? "Dölj listan" : "Visa hela listan";
+});
+
+// Allow paste and auto-uppercase feel
+searchInput.addEventListener("keyup", (e) => {
+  if (e.key === "Enter") searchInput.blur();
+});
+</script>
+</body>
+</html>
